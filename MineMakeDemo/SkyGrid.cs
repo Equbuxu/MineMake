@@ -13,18 +13,18 @@ namespace MineMakeDemo
         private static List<string> survivalBlocks = new List<string>()
         {
             "minecraft:stone",
-            "minecraft:oak_wood",
+            /*"minecraft:oak_wood",
             "minecraft:birch_wood",
             "minecraft:white_wool",
             "minecraft:lava",
             "minecraft:water",
             "minecraft:melon",
-            "minecraft:pumpkin"
+            "minecraft:pumpkin"*/
         };
 
         private static List<string> junkBlocks = new List<string>()
         {
-            "minecraft:deepslate",
+            /*"minecraft:deepslate",
             "minecraft:granite",
             "minecraft:diorite",
             "minecraft:andesite",
@@ -37,20 +37,20 @@ namespace MineMakeDemo
             "minecraft:cobbled_deepslate",
             "minecraft:sandstone",
             "minecraft:obsidian",
-            "minecraft:bookshelf",
+            "minecraft:bookshelf",*/
             "minecraft:tnt",
         };
 
         private static List<string> oreBlocks = new List<string>()
         {
-            "minecraft:coal_ore",
+            /*"minecraft:coal_ore",
             "minecraft:iron_ore",
             "minecraft:copper_ore",
             "minecraft:gold_ore",
             "minecraft:redstone_ore",
             "minecraft:emerald_ore",
             "minecraft:lapis_ore",
-            "minecraft:diamond_ore",
+            "minecraft:diamond_ore",*/
             "minecraft:ancient_debris",
         };
 
@@ -73,7 +73,17 @@ namespace MineMakeDemo
                 gr.FillRectangle(Brushes.Gray, 16, 16, 32, 32);
             }
 
+            CreateSkyGrid(world.Overworld);
+            CreateSkyGrid(world.TheNether);
+            CreateSkyGrid(world.TheEnd);
+            //world.SetBiome(0, 0, 0, Biome.SnowyTaiga);
+            //world.SetBiome(15, 0, 0, Biome.Badlands);
 
+            world.Save(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @".minecraft\saves"));
+        }
+
+        private static void CreateSkyGrid(Dimension dimension)
+        {
             const int radiusChunks = 4;
             const int radiusEmptyChunks = 4;
             const int totalRadius = radiusChunks + radiusEmptyChunks;
@@ -82,7 +92,7 @@ namespace MineMakeDemo
             {
                 for (int j = -totalRadius; j <= totalRadius; j++)
                 {
-                    world.ReserveChunk(i, j);
+                    dimension.ReserveChunk(i, j);
                 }
             }
 
@@ -93,12 +103,11 @@ namespace MineMakeDemo
                 {
                     for (int k = 0; k < 256; k += 4)
                     {
-                        world.SetBlock(i, k, j, GetRandomBlock());
+                        var block = GetRandomBlock();
+                        dimension.SetBlock(i, k, j, block);
                     }
                 }
             }
-
-            world.Save(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), @".minecraft\saves"));
         }
 
         private static string GetRandomBlock()

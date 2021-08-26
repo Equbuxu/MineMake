@@ -45,12 +45,20 @@
     <Compile Include="Blocks.cs" />
     <Compile Include="Chunk.cs" />
     <Compile Include="ChunkStorage.cs" />
+    <Compile Include="Dimension.cs" />
+    <Compile Include="Enums\Biome.cs" />
     <Compile Include="Enums\Difficulty.cs" />
     <Compile Include="Enums\GameMode.cs" />
     <Compile Include="MathHelper.cs" />
     <Compile Include="World.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WorldSaver.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\fNbt\fNbt\fNbt.csproj">
+      <Project>{5c5581ad-f9e2-4389-a639-67e0724394be}</Project>
+      <Name>fNbt</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

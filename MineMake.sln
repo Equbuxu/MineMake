@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MineMake", "MineMake\MineMa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MineMakeDemo", "MineMakeDemo\MineMakeDemo.csproj", "{D603057F-6721-4646-90FE-6A8B19DA7F94}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "fNbt", "fNbt\fNbt\fNbt.csproj", "{5C5581AD-F9E2-4389-A639-67E0724394BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,10 +23,10 @@ Global
 		{D603057F-6721-4646-90FE-6A8B19DA7F94}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D603057F-6721-4646-90FE-6A8B19DA7F94}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D603057F-6721-4646-90FE-6A8B19DA7F94}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1437A545-27CB-4C57-A143-5FC857DB0891}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1437A545-27CB-4C57-A143-5FC857DB0891}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1437A545-27CB-4C57-A143-5FC857DB0891}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1437A545-27CB-4C57-A143-5FC857DB0891}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C5581AD-F9E2-4389-A639-67E0724394BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C5581AD-F9E2-4389-A639-67E0724394BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C5581AD-F9E2-4389-A639-67E0724394BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C5581AD-F9E2-4389-A639-67E0724394BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

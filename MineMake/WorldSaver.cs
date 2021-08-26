@@ -13,21 +13,29 @@ namespace MineMake
         private const string versionName = "1.17.1";
         public static void SaveWorld(World world, string path)
         {
-            var dirPath = Path.Combine(path, world.WorldName);
-            if (Directory.Exists(dirPath))
-                Directory.Delete(dirPath, true);
-            Directory.CreateDirectory(dirPath);
-            var levelDat = CreateLevelDat(world);
-            levelDat.SaveToFile(Path.Combine(dirPath, "level.dat"), NbtCompression.GZip);
+            var worldFolderPath = Path.Combine(path, world.WorldName);
+            if (Directory.Exists(worldFolderPath))
+                Directory.Delete(worldFolderPath, true);
+            Directory.CreateDirectory(worldFolderPath);
 
-            var regionFiles = SeparateFiles(world);
-            string regionPath = Path.Combine(dirPath, "region");
-            Directory.CreateDirectory(regionPath);
-            foreach (var file in regionFiles)
-            {
-                EncodeFile(file.Key.Item1, file.Key.Item2, regionPath, file.Value);
-            }
-            world.Icon?.Save(Path.Combine(dirPath, "icon.png"));
+            var levelDat = CreateLevelDat(world);
+            levelDat.SaveToFile(Path.Combine(worldFolderPath, "level.dat"), NbtCompression.GZip);
+            world.Icon?.Save(Path.Combine(worldFolderPath, "icon.png"));
+
+            string theNetherDir = Path.Combine(worldFolderPath, "DIM-1");
+            string theEndDir = Path.Combine(worldFolderPath, "DIM1");
+
+            string overworldRegion = Path.Combine(worldFolderPath, "region");
+            string theNetherRegion = Path.Combine(theNetherDir, "region");
+            string theEndRegion = Path.Combine(theEndDir, "region");
+
+            Directory.CreateDirectory(overworldRegion);
+            Directory.CreateDirectory(theNetherRegion);
+            Directory.CreateDirectory(theEndRegion);
+
+            EncodeDimension(world.Overworld, overworldRegion);
+            EncodeDimension(world.TheNether, theNetherRegion);
+            EncodeDimension(world.TheEnd, theEndRegion);
         }
 
         private static NbtFile CreateLevelDat(World world)
@@ -56,6 +64,15 @@ namespace MineMake
             var file = new NbtFile();
             file.RootTag.Add(levelDat);
             return file;
+        }
+
+        private static void EncodeDimension(Dimension dim, string regionPath)
+        {
+            var regionFiles = SeparateFiles(dim);
+            foreach (var file in regionFiles)
+            {
+                EncodeFile(file.Key.Item1, file.Key.Item2, regionPath, file.Value);
+            }
         }
 
         private static NbtCompound CreateWorldGenSettings(World world)
@@ -117,10 +134,10 @@ namespace MineMake
             };
         }
 
-        private static Dictionary<(int, int), List<(Chunk, int, int)>> SeparateFiles(World world)
+        private static Dictionary<(int, int), List<(Chunk, int, int)>> SeparateFiles(Dimension dimension)
         {
             Dictionary<(int, int), List<(Chunk, int, int)>> files = new Dictionary<(int, int), List<(Chunk, int, int)>>();
-            foreach (var chunk in world.Chunks.Values)
+            foreach (var chunk in dimension.Chunks.Values)
             {
                 int fileX = (int)Math.Floor(chunk.ChunkPosX / 32.0);
                 int fileZ = (int)Math.Floor(chunk.ChunkPosZ / 32.0);
@@ -202,11 +219,10 @@ namespace MineMake
                 new NbtLong("InhabitedTime", 0),
                 new NbtString("Status", "full"),
                 new NbtInt("xPos", chunk.ChunkPosX),
-                new NbtInt("zPos", chunk.ChunkPosZ)
+                new NbtInt("zPos", chunk.ChunkPosZ),
+                new NbtIntArray("Biomes", chunk.RawBiomes),
             };
             level.Add(CreateSectionsNbt(chunk));
-            //plains everywhere
-            level.Add(new NbtIntArray("Biomes", Enumerable.Repeat<int>(1, 1024).ToArray()));
             NbtFile file = new NbtFile();
             file.RootTag.Add(level);
             file.RootTag.Add(new NbtInt("DataVersion", 2730));
