@@ -42,12 +42,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Blocks.cs" />
+    <Compile Include="Blocks\Block.cs" />
+    <Compile Include="Blocks\BlockFactory.cs" />
+    <Compile Include="Blocks\BlockNames.cs" />
     <Compile Include="Chunk.cs" />
     <Compile Include="ChunkStorage.cs" />
+    <Compile Include="ContainerHelper.cs" />
     <Compile Include="Dimension.cs" />
+    <Compile Include="Enums\AxisRotation.cs" />
     <Compile Include="Enums\Biome.cs" />
     <Compile Include="Enums\Difficulty.cs" />
+    <Compile Include="Enums\FacingRotation.cs" />
     <Compile Include="Enums\GameMode.cs" />
     <Compile Include="MathHelper.cs" />
     <Compile Include="World.cs" />

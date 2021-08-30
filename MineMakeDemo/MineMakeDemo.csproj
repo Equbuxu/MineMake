@@ -36,17 +36,22 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Noise.cs" />
+    <Compile Include="Demo.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="SkyGrid.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MineMake\MineMake.csproj">
-      <Project>{6c043bca-442e-48ee-8bb2-5f9a437b4882}</Project>
-      <Name>MinecraftSaveLib</Name>
-    </ProjectReference>
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="System.Drawing" />
+    <ProjectReference Include="..\fNbt\fNbt\fNbt.csproj">
+      <Project>{5C5581AD-F9E2-4389-A639-67E0724394BE}</Project>
+      <Name>fNbt</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MineMake\MineMake.csproj">
+      <Project>{6c043bca-442e-48ee-8bb2-5f9a437b4882}</Project>
+      <Name>MineMake</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

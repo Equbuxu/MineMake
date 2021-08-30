@@ -1,4 +1,6 @@
-﻿using MineMake.Enums;
+﻿using fNbt;
+using MineMake.Blocks;
+using MineMake.Enums;
 using System.Collections.Generic;
 
 namespace MineMake
@@ -13,18 +15,20 @@ namespace MineMake
             storage = new ChunkStorage(defaultBiome);
         }
 
-        public void SetBlock(int x, int y, int z, string namespacedName)
+        public void SetBlock(int x, int y, int z, Block block) => SetBlock(x, y, z, block.NamespacedName, block.Properties, block.TileEntity);
+
+        public void SetBlock(int x, int y, int z, string namespacedName, Dictionary<string, string> properties = null, NbtCompound tileEntity = null)
         {
             var chunk = storage.GetChunkForBlock(x, y, z);
             var (inX, inY, inZ) = Chunk.GetCoordsInChunk(x, y, z);
-            chunk.SetBlock(inX, inY, inZ, namespacedName);
+            chunk.SetBlock(inX, inY, inZ, namespacedName, properties, tileEntity);
         }
 
         public string GetBlock(int x, int y, int z)
         {
             var chunk = storage.MaybeGetChunkForBlock(x, y, z);
             if (chunk == null)
-                return Blocks.Air;
+                return BlockNames.Air;
             var (inX, inY, inZ) = Chunk.GetCoordsInChunk(x, y, z);
             return chunk.GetBlock(inX, inY, inZ);
         }
@@ -43,6 +47,10 @@ namespace MineMake
         /// </summary>
         public void SetBiome(int x, int y, int z, Biome biome)
         {
+            //move to center of 4x4x4 cube
+            x -= 2;
+            y -= 2;
+            z -= 2;
             var chunk = storage.GetChunkForBlock(x, y, z);
             var (inX, inY, inZ) = Chunk.GetCoordsInChunk(x, y, z);
             chunk.SetBiome(inX / 4, inY / 4, inZ / 4, biome);

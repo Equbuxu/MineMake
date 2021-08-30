@@ -223,12 +223,31 @@ namespace MineMake
                 new NbtIntArray("Biomes", chunk.RawBiomes),
             };
             level.Add(CreateSectionsNbt(chunk));
+            level.Add(CreateTileEntitiesNbt(chunk));
             NbtFile file = new NbtFile();
             file.RootTag.Add(level);
             file.RootTag.Add(new NbtInt("DataVersion", 2730));
             var uncompressed = file.SaveToBuffer(NbtCompression.ZLib);
             return uncompressed;
-            //return CompressZlib(uncompressed);
+        }
+
+        private static NbtList CreateTileEntitiesNbt(Chunk chunk)
+        {
+            NbtList tileEntities = new NbtList("TileEntities", NbtTagType.Compound);
+            foreach (var tileEntity in chunk.RawTileEntities)
+            {
+                var (x, y, z) = tileEntity.Key;
+                var nbt = new NbtCompound(tileEntity.Value);
+                nbt.Add(new NbtString("id", chunk.GetBlock(x, y, z)));
+                nbt.Add(new NbtByte("keepPacked", 0));
+                int gX = chunk.ChunkPosX * 16 + x;
+                int gZ = chunk.ChunkPosZ * 16 + z;
+                nbt.Add(new NbtInt("x", gX));
+                nbt.Add(new NbtInt("y", y));
+                nbt.Add(new NbtInt("z", gZ));
+                tileEntities.Add(nbt);
+            }
+            return tileEntities;
         }
 
         private static NbtList CreateSectionsNbt(Chunk chunk)
@@ -236,18 +255,49 @@ namespace MineMake
             var sections = new NbtList("Sections", NbtTagType.Compound);
             foreach (var section in chunk.RawSections)
             {
-                //create a palette
+                //Сreate the palette
+                //regular
                 int index = 0;
-                Dictionary<string, int> palette = new Dictionary<string, int>();
-                foreach (string block in section.Value)
+                Dictionary<string, int> regularPalette = new Dictionary<string, int>();
+                for (int x = 0; x < 16; x++)
                 {
-                    if (palette.ContainsKey(block))
+                    for (int y = 0; y < 16; y++)
+                    {
+                        for (int z = 0; z < 16; z++)
+                        {
+                            var block = section.Value[x, y, z];
+                            if (regularPalette.ContainsKey(block))
+                                continue;
+                            if (chunk.RawBlockProperties.ContainsKey((x, y + section.Key * 16, z)))
+                                continue;
+                            regularPalette[block] = index;
+                            index++;
+                        }
+                    }
+                }
+
+                //with properties
+                Dictionary<int, IReadOnlyDictionary<string, string>> propertiesPalette = new Dictionary<int, IReadOnlyDictionary<string, string>>();
+                Dictionary<string, List<int>> propertiesIdsPalette = new Dictionary<string, List<int>>();
+                foreach (var block in chunk.RawBlockProperties)
+                {
+                    var (x, y, z) = block.Key;
+                    if (y / 16 != section.Key)
                         continue;
-                    palette[block] = index;
+                    foreach (var entry in propertiesPalette)
+                    {
+                        if (ContainerHelper.ArePropertiesEqual(entry.Value, block.Value))
+                            continue;
+                    }
+                    propertiesPalette[index] = block.Value;
+                    string blockName = chunk.GetBlock(x, y, z);
+                    if (!propertiesIdsPalette.ContainsKey(blockName))
+                        propertiesIdsPalette[blockName] = new List<int>();
+                    propertiesIdsPalette[blockName].Add(index);
                     index++;
                 }
 
-                //encode blocks with palette
+                //Encode blocks with palette
                 List<int> orderedPalettedBlocks = new List<int>();
                 for (int y = 0; y < 16; y++)
                 {
@@ -255,13 +305,28 @@ namespace MineMake
                     {
                         for (int x = 15; x >= 0; x--)
                         {
-                            orderedPalettedBlocks.Add(palette[section.Value[x, y, z]]);
+                            if (chunk.RawBlockProperties.ContainsKey((x, y + section.Key * 16, z)))
+                            {
+                                List<int> potentialIndices = propertiesIdsPalette[section.Value[x, y, z]];
+                                foreach (int potIndex in potentialIndices)
+                                {
+                                    if (ContainerHelper.ArePropertiesEqual(propertiesPalette[potIndex], chunk.RawBlockProperties[(x, y + section.Key * 16, z)]))
+                                    {
+                                        orderedPalettedBlocks.Add(potIndex);
+                                        break;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                orderedPalettedBlocks.Add(regularPalette[section.Value[x, y, z]]);
+                            }
                         }
                     }
                 }
 
-                //fit the encoded value into longs
-                int bitsPerBlock = (int)Math.Max(4, Math.Ceiling(Math.Log(2, Math.Max(palette.Count, 4))));
+                //Fit the encoded value into longs
+                int bitsPerBlock = (int)Math.Max(4, Math.Ceiling(Math.Log(2, Math.Max(regularPalette.Count, 4))));
                 int blocksPerLong = 64 / bitsPerBlock;
 
                 int curBlockIndex = 0;
@@ -280,17 +345,34 @@ namespace MineMake
                         break;
                 }
 
-                //encode palette as nbt
+                //Encode palette as nbt
                 var nbtPalette = new NbtList("Palette", NbtTagType.Compound);
-                foreach (var block in palette)
+                foreach (var block in regularPalette)
                 {
                     nbtPalette.Add(new NbtCompound()
                     {
                         new NbtString("Name", block.Key)
                     });
                 }
+                foreach (var blockIds in propertiesIdsPalette)
+                {
+                    foreach (int id in blockIds.Value)
+                    {
+                        var entry = new NbtCompound()
+                        {
+                            new NbtString("Name", blockIds.Key)
+                        };
+                        var props = new NbtCompound("Properties");
+                        foreach (var pair in propertiesPalette[id])
+                        {
+                            props.Add(new NbtString(pair.Key, pair.Value));
+                        }
+                        entry.Add(props);
+                        nbtPalette.Add(entry);
+                    }
+                }
 
-                //create nbt
+                //Create nbt
                 var compound = new NbtCompound()
                 {
                     new NbtByte("Y", (byte)section.Key),
